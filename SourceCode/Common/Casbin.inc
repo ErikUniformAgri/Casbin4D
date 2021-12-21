@@ -2,4 +2,4 @@
 // e.g., {.$DEFINE xxx}
 
 // Show log messages in console
-{$DEFINE CASBIN_DEBUG}
+{.$DEFINE CASBIN_DEBUG}
