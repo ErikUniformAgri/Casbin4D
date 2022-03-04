@@ -25,6 +25,7 @@ type
     fMatcherString: string;
     fMathsParser: TCStyleParser;
     fIdentifiers: TDictionary<string, integer>;
+    fNextID: integer;
     procedure cleanMatcher;
     procedure replaceIdentifiers(var aParseString: string);
   private
@@ -58,6 +59,9 @@ begin
   fMathsParser:=TCStyleParser.Create;
   TCStyleParser(fMathsParser).CStyle:=False;
   fIdentifiers:=TDictionary<string, integer>.Create;
+
+  fNextID:=0;
+
   addIdentifier('true');
   addIdentifier('false');
 
@@ -72,15 +76,16 @@ begin
   inherited;
 end;
 
-{ TMatcher }
-
 procedure TMatcher.addIdentifier(const aTag: string);
 var
   tag: string;
 begin
   tag:=aTag.Trim.ToUpper;
   if not fIdentifiers.ContainsKey(tag) then
-    fIdentifiers.Add(tag, Integer(Round(Random*100)));
+  begin
+    AtomicIncrement(fNextID);
+    fIdentifiers.Add(tag, fNextID);
+  end;
 end;
 
 procedure TMatcher.cleanMatcher;
@@ -95,7 +100,7 @@ begin
   while Index<>-1 do
   begin
     fMatcherString:=fMatcherString.Remove(index, 1);
-  index:=fMatcherString.IndexOf('''');
+    index:=fMatcherString.IndexOf('''');
   end;
 end;
 
@@ -130,6 +135,8 @@ begin
   // Replace JOHN -> 22. Dont replace JOHNNY to 22NY
   // * Key has to be at the start of the string or the previous char is not part of the identifier (not a word)
   // * Key has to be at the end of the string or the following char is not part of the identifier (not a word)
+  //
+  // Written by ErikUniformAgri
   for pair in fIdentifiers do
   begin
     pattern:='(^|\W)'+pair.Key+'($|\W)';
